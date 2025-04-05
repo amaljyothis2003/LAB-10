@@ -9,6 +9,7 @@ from pyspark.ml.classification import LogisticRegression
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 
 def create_spark_session():
     return SparkSession.builder.appName("WomensClothingReview").getOrCreate()
@@ -31,16 +32,41 @@ def plot_clusters(df_pandas, predictions):
 
 st.title("Lab 10: Women's Clothing Reviews")
 
-# Upload CSV
-uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
-if uploaded_file:
-    spark = create_spark_session()
-    df_pandas = pd.read_csv(uploaded_file)
-    df_pandas = df_pandas.replace("", None)
 
-    df = spark.createDataFrame(df_pandas)
-    st.write("### Data Sample:")
-    st.write(df.limit(50).toPandas())
+# Function to generate synthetic dataset
+def generate_synthetic_data(num_rows=5000):
+    np.random.seed(42)
+
+    data = {
+        "Clothing ID": np.random.randint(1000, 1100, size=num_rows),
+        "Age": np.random.randint(18, 70, size=num_rows),
+        "Title": np.random.choice(["Great fit", "Love it", "Too small", "Not as expected", "Perfect"], size=num_rows),
+        "Review Text": np.random.choice([
+            "Loved it!", 
+            "Too tight around the waist.", 
+            "Color was off.", 
+            "Just what I needed.", 
+            "Material feels cheap."
+        ], size=num_rows),
+        "Rating": np.random.randint(1, 6, size=num_rows),
+        "Recommended IND": np.random.choice([0, 1], size=num_rows),
+        "Positive Feedback Count": np.random.poisson(5, size=num_rows),
+        "Division Name": np.random.choice(["General", "Petites", "Initmates"], size=num_rows),
+        "Department Name": np.random.choice(["Tops", "Dresses", "Bottoms", "Intimate"], size=num_rows),
+        "Class Name": np.random.choice(["Dresses", "Knits", "Blouses", "Lounge", "Sweaters"], size=num_rows)
+    }
+
+    return pd.DataFrame(data)
+
+# Generate the dataset
+df_pandas = generate_synthetic_data(10000)
+st.write("### Synthetic Dataset Sample:")
+st.write(df_pandas.head())
+
+# Initialize Spark
+spark = create_spark_session()
+df = spark.createDataFrame(df_pandas)
+
 
     # Data Cleaning & Wrangling
     if st.button("Clean Data"):
