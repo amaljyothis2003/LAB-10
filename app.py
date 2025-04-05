@@ -40,7 +40,7 @@ def plot_clusters(df, predictions):
 
 # Sidebar: Generate data
 st.sidebar.subheader("Synthetic Data Generator")
-num_rows = st.sidebar.slider("Number of Records", 0,10,100, 1000, 500)
+num_rows = st.sidebar.slider("Number of Records", 100, 1000, 500)
 generate_btn = st.sidebar.button("Generate Dataset")
 
 # Session state to store data
@@ -56,7 +56,7 @@ if generate_btn:
 if st.session_state.df is not None:
     df = st.session_state.df
     st.write("### Data Sample:")
-    st.write(df)
+    st.write(df.head())
 
     st.sidebar.subheader("Operations")
 
@@ -64,7 +64,7 @@ if st.session_state.df is not None:
         df = df.dropna()
         st.session_state.df = df
         st.write("### Cleaned Data Sample:")
-        st.write(df)
+        st.write(df.head())
 
     if st.sidebar.button("Perform EDA"):
         st.write("### Exploratory Data Analysis")
