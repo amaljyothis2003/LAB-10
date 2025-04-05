@@ -58,34 +58,38 @@ def plot_clusters(df_pandas, predictions):
 # Streamlit Title
 st.title("Lab 10: Women's Clothing Reviews (Synthetic Data Version)")
 
-# Generate and display synthetic dataset
-df_pandas = generate_synthetic_data()
-st.write("### Synthetic Dataset Sample:")
-st.write(df_pandas.head())
+# Sidebar with task selection
+st.sidebar.title("Choose Analysis Type")
+task = st.sidebar.radio("Select Option:", ["View Data", "Clean Data", "EDA", "Run Regression", "Run Clustering", "Run Classification"])
 
-# Create Spark DataFrame
+# Generate synthetic dataset
+df_pandas = generate_synthetic_data()
 spark = create_spark_session()
 df = spark.createDataFrame(df_pandas)
 
-# Data Cleaning
-if st.button("Clean Data"):
+# Perform the selected task
+if task == "View Data":
+    st.subheader("Synthetic Dataset Sample:")
+    st.write(df_pandas.head())
+
+elif task == "Clean Data":
+    st.subheader("Cleaned Data Sample:")
     df_pandas = df_pandas.dropna()
     df = spark.createDataFrame(df_pandas)
-    st.write("### Cleaned Data Sample:")
     st.write(df.limit(50).toPandas())
 
-# EDA
-if st.button("Perform EDA"):
+elif task == "EDA":
+    st.subheader("Exploratory Data Analysis")
     pdf = df.toPandas()
     fig, ax = plt.subplots()
     sns.histplot(pdf['Rating'], bins=5, ax=ax)
     st.pyplot(fig)
-    
-    st.write("### Descriptive Statistics:")
+
+    st.subheader("Descriptive Statistics:")
     st.write(df.describe().toPandas())
 
-# Regression
-if st.button("Run Regression"):
+elif task == "Run Regression":
+    st.subheader("Linear Regression: Predicting Rating based on Age")
     assembler = VectorAssembler(inputCols=['Age'], outputCol='features')
     df_model = assembler.transform(df).select('features', col('Rating').alias('label'))
     lr = LinearRegression()
@@ -94,8 +98,8 @@ if st.button("Run Regression"):
     st.write("Intercept:", model.intercept)
     plot_regression(df_pandas)
 
-# Clustering
-if st.button("Run Clustering"):
+elif task == "Run Clustering":
+    st.subheader("K-Means Clustering")
     assembler = VectorAssembler(inputCols=['Age', 'Positive Feedback Count'], outputCol='features')
     df_model = assembler.transform(df).select('features')
     kmeans = KMeans(k=3)
@@ -104,8 +108,8 @@ if st.button("Run Clustering"):
     st.write("Cluster Centers:", model.clusterCenters())
     plot_clusters(df_pandas, predictions)
 
-# Classification
-if st.button("Run Classification"):
+elif task == "Run Classification":
+    st.subheader("Logistic Regression: Predicting Recommendation")
     assembler = VectorAssembler(inputCols=['Age', 'Rating'], outputCol='features')
     df_model = assembler.transform(df).select('features', col('Recommended IND').alias('label'))
     log_reg = LogisticRegression()
